@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
 # --- ROBUST IMPORT SETUP ---
 # This ensures Python finds 'transformation' and 'faculty_db' 
@@ -24,12 +25,45 @@ import faculty_db as storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 def get_driver():
-    """Launches a visible Chrome Browser using Native Selenium Manager."""
-    options = webdriver.ChromeOptions()
-    options.add_argument('--start-maximized')
+    """
+    Launches a Chrome Browser.
+    Auto-detects if running on Render (Docker) or Local Machine.
+    """
+    options = Options()
+    
+    # --- UNIVERSAL FLAGS (Good for both) ---
     options.add_argument('--log-level=3')
-    # Native Selenium 4.6+ manager (No external install needed)
-    return webdriver.Chrome(options=options)
+    options.add_argument('--start-maximized')
+    options.add_argument('--disable-notifications')
+    
+    # --- CLOUD / DOCKER SPECIFIC SETTINGS ---
+    # We check if the 'chromium' binary exists at the standard Linux path.
+    # If it does, we assume we are in the Docker container.
+    if os.path.exists("/usr/bin/chromium"):
+        logging.info("🔧 CONFIG: Running in Docker/Cloud Environment")
+        
+        # 1. Headless is MANDATORY for servers (no screen)
+        options.add_argument("--headless=new")
+        
+        # 2. Critical Docker Flags (prevents crashes)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        
+        # 3. Point to the installed binaries
+        options.binary_location = "/usr/bin/chromium"
+        service = Service("/usr/bin/chromedriver")
+        
+        return webdriver.Chrome(service=service, options=options)
+    
+    else:
+        # --- LOCAL MACHINE SETTINGS ---
+        logging.info("💻 CONFIG: Running on Local Machine")
+        # You can comment this out if you want to see the browser pop up locally
+        # options.add_argument("--headless=new") 
+        
+        # Native Selenium Manager handles the rest
+        return webdriver.Chrome(options=options)
 
 def smart_extract(driver, keywords):
     """
