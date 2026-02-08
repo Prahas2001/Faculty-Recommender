@@ -11,3 +11,5 @@ python-dotenv==1.0.1
 nest-asyncio==1.6.0
 langchain-huggingface==0.0.3
 langchain==0.2.12
+langchain-community==0.2.12
+langchain-core==0.2.12
