@@ -1,42 +1,20 @@
-import os
-import gc # Garbage Collection
+import json
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "Recommender" / "chroma_db"
+DATA_PATH = BASE_DIR / "faculty_data.json"
 
-def get_best_matches(query, k=3):
-    from langchain_huggingface import HuggingFaceEmbeddings
-    from langchain_community.vectorstores import Chroma
+def get_all_faculty_context():
+    """Reads the JSON file and returns a text summary for Gemini."""
+    if not DATA_PATH.exists():
+        return "No faculty data available."
     
-    if not DB_PATH.exists():
-        return {"error": "Vector DB not found on server."}
-
-    # Use the SMALLEST possible model (paraphrase-MiniLM-L3-v2)
-    embedding_function = HuggingFaceEmbeddings(
-        model_name="paraphrase-MiniLM-L3-v2",
-        model_kwargs={'device': 'cpu'}
-    )
-
-    vector_db = Chroma(
-        persist_directory=str(DB_PATH), 
-        embedding_function=embedding_function
-    )
-
-    results = vector_db.similarity_search(query, k=k)
-
-    matches = []
-    for doc in results:
-        matches.append({
-            "name": doc.metadata.get("name"),
-            "email": doc.metadata.get("email"),
-            "profile_url": doc.metadata.get("profile_url"),
-            "excerpt": doc.page_content[:200]
-        })
+    with open(DATA_PATH, 'r') as f:
+        data = json.load(f)
     
-    # 🧹 MANUALLY CLEAR MEMORY
-    del vector_db
-    del embedding_function
-    gc.collect() 
-
-    return matches
+    context_list = []
+    for i, p in enumerate(data):
+        # We give Gemini the name, URL, and a snippet of research
+        context_list.append(f"{i+1}. {p['name']} ({p['profile_url']}): {p['research'][:400]}...")
+    
+    return "\n".join(context_list)
