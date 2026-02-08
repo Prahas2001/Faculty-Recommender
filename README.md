@@ -1,4 +1,4 @@
-# FacultyFinder: DA-IICT Faculty Data Pipeline
+# Faculty Recommender: DA-IICT Faculty Discovery Engine
 
 ## Project Overview
 
