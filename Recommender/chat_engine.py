@@ -27,7 +27,7 @@ def chat_with_faculty(user_query):
 
     try:
         # 1.5-flash is extremely fast and has a huge memory for the list
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-flash')
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
