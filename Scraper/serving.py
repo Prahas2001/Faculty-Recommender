@@ -1,6 +1,20 @@
+import os
+
+# 1. Force the app to use only 1 CPU thread
+# This prevents the server from spawning multiple threads that eat RAM
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+
+# 2. Prevent PyTorch from loading CUDA drivers (Saves ~50-100MB RAM)
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+# 3. Optimize Python's own memory handling
+os.environ["PYTHONHASHSEED"] = "0"
+
 from fastapi import FastAPI, HTTPException
 import sys
 from pathlib import Path
+
 
 # --- ROBUST IMPORT SETUP ---
 CURRENT_DIR = Path(__file__).resolve().parent
