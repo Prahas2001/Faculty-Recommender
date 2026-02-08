@@ -1,5 +1,5 @@
 # Faculty Recommender: DA-IICT Faculty Discovery Engine
-
+**Live Demo:** [Launch Faculty Recommender App](https://faculty-recommender-lbjtocprzrjuv7fk4zx6bw.streamlit.app/)
 ## Project Overview
 
 **Faculty Recommender** is an advanced AI discovery engine that transforms structured faculty data into an interactive, semantic-aware research consultant.
