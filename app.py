@@ -1,14 +1,7 @@
 import streamlit as st
-import os
-
-# ☁️ CLOUD CONFIGURATION
-# If we are on Streamlit Cloud, use the secret URL.
-# If we are local, default to localhost.
-api_url = st.secrets.get("BACKEND_URL", "http://127.0.0.1:8000")
-
-st.title("🎓 Faculty Recommender")
 import requests
 import re
+import os
 
 # --- 1. PAGE CONFIG ---
 st.set_page_config(
@@ -17,7 +10,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- 2. CUSTOM CSS ---
+# --- 2. CLOUD CONFIGURATION ---
+# Attempt to load the Backend URL from Streamlit Secrets (for Cloud)
+# If not found, fall back to Localhost (for local testing)
+DEFAULT_API_URL = st.secrets.get("BACKEND_URL", "http://127.0.0.1:8000")
+
+# --- 3. CUSTOM CSS ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap');
@@ -75,11 +73,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. HELPER FUNCTION ---
+# --- 4. HELPER FUNCTION ---
 def parse_and_clean_response(text):
     """
     Separates the intro from the list and cleans raw markdown.
     """
+    if not text: return "", []
+
     # Split by the first numbered item (e.g., "1.")
     parts = re.split(r'(?=\n\d+\.)', text)
     
@@ -106,12 +106,14 @@ def parse_and_clean_response(text):
             
     return intro_text, faculty_list
 
-# --- 4. UI LAYOUT ---
+# --- 5. UI LAYOUT ---
 st.markdown('<div class="hero"><h1>Faculty Insight Engine</h1><p>Automated Expertise Mapping & Research Discovery</p></div>', unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown("### ⚙️ GATEWAY CONFIG")
-    api_url = st.text_input("Endpoint", value="http://127.0.0.1:8000")
+    # FIX: Use the variable from secrets as the default value
+    api_url = st.text_input("Endpoint", value=DEFAULT_API_URL)
+    
     st.markdown("---")
     st.info("💡 **Pro-Tip:** Use specific research terms like 'Heterogeneous Graphs' for better precision.")
 
@@ -123,9 +125,16 @@ with center:
         if query:
             with st.spinner("Analyzing semantic alignments..."):
                 try:
-                    response = requests.get(f"{api_url}/recommend", params={"q": query})
+                    # Construct the full URL carefully
+                    # Remove trailing slash from api_url if user added one, then add endpoint
+                    clean_api_url = api_url.rstrip('/')
+                    full_endpoint = f"{clean_api_url}/recommend"
+                    
+                    response = requests.get(full_endpoint, params={"q": query})
+                    
                     if response.status_code == 200:
-                        raw_text = response.json().get("ai_response", "")
+                        data = response.json()
+                        raw_text = data.get("ai_response", "")
                         
                         # Parse and Clean
                         intro, faculty = parse_and_clean_response(raw_text)
@@ -134,15 +143,19 @@ with center:
                         if intro:
                             st.markdown(f'<div class="intro-text">{intro}</div>', unsafe_allow_html=True)
                         
-                        # Display Clean Cards (No Badge)
-                        for prof in faculty:
-                            st.markdown(f"""
-                            <div class="faculty-card">
-                                <div class="prof-name">{prof['name']}</div>
-                                <div class="rationale">{prof['desc']}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                        # Display Clean Cards
+                        if faculty:
+                            for prof in faculty:
+                                st.markdown(f"""
+                                <div class="faculty-card">
+                                    <div class="prof-name">{prof['name']}</div>
+                                    <div class="rationale">{prof['desc']}</div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        else:
+                             st.warning("No matches found. Try a broader term.")
                     else:
-                        st.error("System Error: Backend unreachable.")
+                        st.error(f"System Error: Backend returned status {response.status_code}")
                 except Exception as e:
                     st.error(f"Connection Error: {e}")
+                    
