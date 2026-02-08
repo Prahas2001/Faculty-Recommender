@@ -38,7 +38,7 @@ The system is specifically engineered for **Resource Optimization**, replacing m
     cd faculty-recommender
     ```
 
-2.  **Create a Virtual Environment**
+### 2.  **Create a Virtual Environment**
     It is recommended to use a virtual environment to manage dependencies and avoid conflicts.
     ```bash
     python -m venv .venv
@@ -48,13 +48,13 @@ The system is specifically engineered for **Resource Optimization**, replacing m
     source .venv/bin/activate
     ```
 
-3.  **Install Dependencies**
+### 3.  **Install Dependencies**
     This project uses a lightweight requirements.txt specifically optimized for environments with memory constraints (under 512MB RAM).
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Configure Environment Variables**
+### 4.  **Configure Environment Variables**
     Create a .env file in the root directory to securely store your API credentials.
     ```Plaintext
     GEMINI_API_KEY=your_google_ai_studio_key_here
@@ -209,13 +209,6 @@ FacultyFinder/
 ### **Handling Model Depreciation**
 * **Challenge**: The retirement of earlier Gemini models (1.5 series) caused 404 endpoint errors during the transition to 2026 standards.
 * **Solution**: Migrated the inference engine to the **Gemini 2.5 Flash** stable release, ensuring future-proof API calls and improved semantic extraction accuracy.
-
----
-
-## Future Roadmap
-* **Dynamic Scraping Triggers**: Implement GitHub Actions to automatically run the Selenium scraper weekly to keep faculty data current.
-* **Multi-Modal Discovery**: Allow students to upload their CVs or Research Papers to find faculty matches based on their existing work.
-* **Enhanced UI**: Add visualization graphs (e.g., Plotly) to show research clusters and faculty collaboration networks.
 
 ---
 
