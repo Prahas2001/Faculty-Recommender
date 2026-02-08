@@ -1,4 +1,12 @@
 import streamlit as st
+import os
+
+# ☁️ CLOUD CONFIGURATION
+# If we are on Streamlit Cloud, use the secret URL.
+# If we are local, default to localhost.
+api_url = st.secrets.get("BACKEND_URL", "http://127.0.0.1:8000")
+
+st.title("🎓 Faculty Recommender")
 import requests
 import re
 
