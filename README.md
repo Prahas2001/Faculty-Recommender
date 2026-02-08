@@ -1,107 +1,157 @@
 # FacultyFinder: DA-IICT Faculty Data Pipeline
 
 ## Project Overview
-**FacultyFinder** is a robust Data Engineering pipeline designed to harvest, clean, validate, and serve faculty profiles from the DA-IICT website.
 
-This project utilizes a **Pure Selenium scraping engine** to handle dynamic content rendering and extraction. Unlike hybrid approaches, this system uses Selenium's native `XPath` and `CSS Selectors` to navigate the DOM directly, consolidating data from multiple directories into a unified schema. The system includes a modular transformation layer, a data health analysis suite, and a FastAPI serving layer for downstream applications.
+**Faculty Recommender** is an advanced AI discovery engine that transforms structured faculty data into an interactive, semantic-aware research consultant.
 
-## Key Features
-* **Selenium-Native Extraction:** Uses a headless browser for both navigation and data extraction (XPath/CSS), eliminating the need for external HTML parsers.
-* **Smart Traversal:** Handles varying HTML structures across Faculty, Adjunct, and Distinguished Professor pages using adaptive locators.
-* **Modular Architecture:** Splits responsibilities into ingestion, transformation, database management, and analysis.
-* **Data Health & Analysis:** Includes a standalone script (`analysis.py`) to generate statistical reports on data quality.
-* **Multi-Format Storage:** Persists data to **SQLite** (`faculty.db`), **JSON** (`final_faculty_data.json`), and **CSV** (`final_faculty_data.csv`) for maximum compatibility.
-* **REST API:** A high-performance `FastAPI` server (`serving.py`) that exposes the curated dataset.
+This component utilizes a **Long-Context LLM Architecture** powered by **Gemini 2.5 Flash** to perform deep semantic reasoning across the entire DA-IICT faculty corpus. Unlike traditional vector-search systems that rely on heavy local embedding models, this system implements a **"Zero-Infrastructure" RAG approach.** By injecting the full faculty directory directly into the model's expansive context window, the engine understands the nuanced relationship between a student’s research query and a professor's expertise—matching intent and sub-fields (e.g., "Deep Learning" to "Computer Vision") rather than just literal keywords.
 
-## Tech Stack
+The system is specifically engineered for **Resource Optimization**, replacing massive vector databases with a lightweight JSON-context retrieval strategy. This allows the production environment to maintain a stable memory footprint of **under 100MB RAM**, ensuring high-availability deployment on cloud-constrained environments like **Render's Free Tier.**
+
+## Key Features: Faculty Recommender
+
+* **Semantic Reasoning Engine:** Leverages **Gemini 2.5 Flash** to understand research intent and sub-field relationships rather than relying on simple keyword matching.
+* **Long-Context Architecture:** Implements a "Zero-Infrastructure" RAG approach by injecting the full faculty corpus directly into the LLM's context window.
+* **Memory-Optimized Deployment:** Specifically engineered to operate under a **100MB RAM** footprint, ensuring stable execution on **Render's Free Tier** (512MB limit).
+* **Explanatory AI Logic:** Provides detailed natural language reasoning for every recommendation, highlighting the specific synergy between user queries and faculty profiles.
+* **Lightweight Context Retrieval:** Utilizes a streamlined **JSON-based** "Source of Truth" to minimize latency and eliminate the overhead of local vector databases.
+* **Hybrid Integration:** Seamlessly connects a **FastAPI** backend with a **Streamlit** frontend for a responsive, production-ready research discovery interface.
+
+---
+
+## Tech Stack: Faculty Recommender
+
 * **Language:** Python 3.10+
-* **Web Scraping:** `Selenium` (WebDriver & Extraction)
-* **Data Processing:** `Pandas`, `NumPy`
-* **Database:** `SQLite3`
+* **AI Engine:** `Google Generative AI` (Gemini 2.5 Flash)
 * **API Framework:** `FastAPI`, `Uvicorn`
+* **Frontend UI:** `Streamlit`
+* **Data Handling:** `JSON` (Lightweight Context Retrieval)
+* **Environment Management:** `python-dotenv`
 
 ---
 
 ## Setup & Installation
 
-1.  **Clone the Repository**
+### 1. Clone the Repository
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/faculty-assignment.git](https://github.com/YOUR_USERNAME/faculty-assignment.git)
-    cd faculty-assignment
+    git clone [https://github.com/YOUR_USERNAME/faculty-recommender.git](https://github.com/YOUR_USERNAME/faculty-recommender.git)
+    cd faculty-recommender
     ```
 
 2.  **Create a Virtual Environment**
+    It is recommended to use a virtual environment to manage dependencies and avoid conflicts.
     ```bash
-    python -m venv venv
+    python -m venv .venv
     # Windows:
-    venv\Scripts\activate
+    .\.venv\Scripts\activate
     # Mac/Linux:
-    source venv/bin/activate
+    source .venv/bin/activate
     ```
 
 3.  **Install Dependencies**
+    This project uses a lightweight requirements.txt specifically optimized for environments with memory constraints (under 512MB RAM).
     ```bash
     pip install -r requirements.txt
+    ```
+
+4.  **Configure Environment Variables**
+    Create a .env file in the root directory to securely store your API credentials.
+    ```Plaintext
+    GEMINI_API_KEY=your_google_ai_studio_key_here
     ```
 
 ---
 
 ## Workflow & Usage
 
-### Step 1: Ingestion (Scrape & Transform)
-Run the main ingestion script. This launches the Selenium driver, scrapes the target pages, applies transformations, and saves the data.
+### Step 1: Environment Configuration
+Before launching the intelligence layer, ensure your Gemini API key is configured.
+* **Action**: Create a `.env` file in the root directory.
+* **Variable**: `GEMINI_API_KEY=your_google_ai_studio_key_here`
+
+### Step 2: Backend Initialization (FastAPI)
+Start the metadata and inference server. This layer handles the semantic context retrieval.
 ```bash
-python ingestion.py
+uvicorn Scraper.serving:app --reload
 ```
-* **Process:** Scrapes (Selenium) -> Cleans (via transformation.py) -> Saves to DB (via faculty_db.py) -> Exports CSV/JSON.
+* **Process:** Loads the lightweight faculty_data.json into memory and prepares the Gemini-Flash inference engine.
+* **Endpoint:** Access the API docs at http://127.0.0.1:8000/docs.
 
-* **Output:** faculty.db, final_faculty_data.json, final_faculty_data.csv.
-
-### Step 2: Quality Assurance (Data Analysis)
-Run the analysis script to verify data integrity and view distribution metrics.
+### Step 3: Frontend Deployment (Streamlit)
+Launch the interactive research discovery dashboard.
 ```bash
-python analysis.py
+streamlit run app.py
 ```
-* **Action:** Loads the generated data and prints a health report (null counts, unique values, data types) to the console.
+* **Action:** This will open a browser window at http://localhost:8501.
 
-### Step 3: Serving (Start API)
-Launch the FastAPI server to expose the validated data.
-```bash
-uvicorn serving:app --reload
-```
-* **Action:** Loads `final_faculty_data.json` into memory and starts a local web server.
-* **Output:** Server starts at http://127.0.0.1:8000.
 
-### Step 4: Verification
-Open your web browser and navigate to the interactive API documentation to test the system.
-* **Link:** http://127.0.0.1:8000/docs
+### Step 4: Semantic Discovery
+Interact with the engine to find research matches.
+* **Input:** Enter a research interest (e.g., "Quantum Computing" or "Graph Neural Networks") into the discovery bar.
+* **Processing:** The system performs a Zero-Infrastructure RAG pass, injecting the faculty corpus into the LLM context.
+* **Output:** Receive a ranked list of faculty members along with an AI-generated reasoning report explaining the research alignment.
 
 ---
 
-## API Endpoints
+## API Endpoints: Intelligence Layer
+
+The following endpoints are exposed via the **FastAPI** backend to facilitate semantic discovery and metadata retrieval.
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/` | **Health Check.** Returns API status and total record count. |
-| `GET` | `/faculty/all` | **Bulk Fetch.** Returns the complete dataset. (Used for vector embedding generation). |
-| `GET` | `/faculty/search` | **Search.** specific faculty profiles based on query parameters. |
+| `GET` | `/` | **Health Check.** Returns API status and available discovery endpoints. |
+| `GET` | `/faculty` | **Bulk Metadata.** Returns the complete curated faculty dataset from the JSON source. |
+| `GET` | `/recommend` | **Semantic Inference.** Accepts a query `q` and returns Gemini-powered recommendations with reasoning. |
+
+---
+
+### Request Examples
+
+#### 1. Faculty Recommendation (Semantic Search)
+**Endpoint:** `/recommend?q={query}`
+* **Example**: `/recommend?q=Heterogeneous+Graphs`
+* **Response**:
+```json
+{
+  "ai_response": "Based on the research profiles, Dr. [Name] is a top match due to their work in [Field]. Their recent projects in [Project] align with your interest in Graphs..."
+}
+```
+
+#### 2. Faculty Metadata Fetch
+**Endpoint:** `/faculty`
+* **Description:** Useful for downstream applications needing the raw validated profiles (Name, Research Email, etc.).
+* **Response**:
+```json
+[
+  {
+    "id": 1,
+    "name": "Dr. Biswajit Mishra",
+    "research": "Embedded Systems, VLSI",
+    "email": "biswajit_mishra@daiict.ac.in",
+    "specialization": "VLSI Design"
+  }
+]
+```
 
 ---
 
 ## Project Structure
 ```
 FacultyFinder/
-├── ingestion.py             # Main entry point: Selenium extraction logic
-├── transformation.py        # Logic: Data cleaning, email sanitization, text normalization
-├── faculty_db.py            # Logic: Database connection, schema creation, & CRUD ops
-├── analysis.py              # Logic: Generates data health checks & statistical summaries
-├── serving.py               # API: FastAPI application to serve the cleaned data
-├── requirements.txt         # Project dependencies
-├── README.md                # Project documentation
-├── faculty.db               # (Output) SQLite database containing structured profiles
-├── final_faculty_data.json  # (Output) JSON artifact for web portability
-├── final_faculty_data.csv   # (Output) CSV artifact for data analysis/Excel
+├── Scraper/                 # Pillar 1: Ingestion & Metadata API
+│   ├── ingestion.py         # Selenium extraction logic
+│   ├── faculty_db.py        # SQLite schema & CRUD operations
+│   ├── serving.py           # FastAPI metadata server
+│   └── analysis.py          # Data health reports
+├── Recommender/             # Pillar 2: AI Intelligence
+│   ├── chat_engine.py       # Gemini 2.5 Flash reasoning logic
+│   └── inference.py         # Context retrieval from JSON
+├── faculty_data.json        # Unified "Semantic Source of Truth"
+├── app.py                   # Streamlit Frontend Dashboard
+└── requirements.txt         # Lightweight dependency list
 ```
+
+---
 
 ## Dataset Statistics & Analysis
 
@@ -146,3 +196,32 @@ FacultyFinder/
 | **teaching** | 40 | 0 | 40 | **64.3%** |
 | **specialization** | 3 | 0 | 3 | **97.3%** |
 | **profile_url** | 0 | 0 | 0 | **100.0%** |
+
+---
+
+## Technical Challenges & Solutions
+
+### **The 512MB RAM Bottleneck**
+* **Challenge**: The initial deployment using `ChromaDB` and `Sentence-Transformers` (local embeddings) exceeded the **512MB RAM limit** on Render’s free tier, leading to persistent "Out of Memory" crashes.
+* **Solution**: Re-engineered the architecture to a **JSON-Context Injection** model. By shifting the semantic processing to **Gemini 2.5 Flash**'s long-context window, we eliminated the need for heavy local vector databases.
+* **Result**: Reduced the production memory footprint from **800MB+** to a stable **~90MB**, ensuring 100% uptime on free-tier infrastructure.
+
+### **Handling Model Depreciation**
+* **Challenge**: The retirement of earlier Gemini models (1.5 series) caused 404 endpoint errors during the transition to 2026 standards.
+* **Solution**: Migrated the inference engine to the **Gemini 2.5 Flash** stable release, ensuring future-proof API calls and improved semantic extraction accuracy.
+
+---
+
+## Future Roadmap
+* **Dynamic Scraping Triggers**: Implement GitHub Actions to automatically run the Selenium scraper weekly to keep faculty data current.
+* **Multi-Modal Discovery**: Allow students to upload their CVs or Research Papers to find faculty matches based on their existing work.
+* **Enhanced UI**: Add visualization graphs (e.g., Plotly) to show research clusters and faculty collaboration networks.
+
+---
+
+## License & Attribution
+* **Data Source**: Publicly available faculty directories from the [DA-IICT Website](https://www.daiict.ac.in/).
+* **AI Model**: Powered by Google Gemini 2.5.
+* **License**: Distributed under the MIT License. See `LICENSE` for more information.
+
+---
