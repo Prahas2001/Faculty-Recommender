@@ -57,22 +57,16 @@ def search(q: str):
 
 @app.get("/recommend")
 def recommend(q: str):
-    """
-    Smart RAG Search.
-    Uses Gemini AI to explain WHY professors are a match.
-    """
-    # Call your Self-Healing AI Engine
-    response_text = chat_with_faculty(q)
+    print(f"--- Processing Query: {q} ---")
+    try:
+        print("Step 1: Calling chat_with_faculty...")
+        response_text = chat_with_faculty(q)
+        print("Step 2: Success!")
+        return {"ai_response": response_text}
+    except Exception as e:
+        print(f"🛑 CRASH IN SERVING: {str(e)}")
+        return {"error": str(e)}
     
-    # Simple error check to pass 404s correctly
-    if "couldn't find" in response_text and "Error" in response_text:
-         raise HTTPException(status_code=404, detail="No matches found.")
-    
-    return {
-        "query": q, 
-        "ai_response": response_text
-    }
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
